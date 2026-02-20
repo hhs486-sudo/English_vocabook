@@ -615,7 +615,31 @@ async function runExtract() {
     try {
       await Loader.load(CDN.pdfjs);
       pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
-      const ws = await extractText(await parsePdf(pdfs[i]));
+      const text = await parsePdf(pdfs[i]);
+      let ws = [];
+
+      // 1차: 텍스트 청크 단위로 추출
+      if (text.trim().length >= 30) {
+        const chunks = splitChunks(text, 6000);
+        for (let c = 0; c < chunks.length; c++) {
+          setLoading(true, `PDF 텍스트 분석 중...`, `${c+1} / ${chunks.length} 청크`);
+          const cw = await extractText(chunks[c]);
+          ws.push(...cw);
+        }
+      }
+
+      // 2차: 텍스트에서 단어를 못 찾으면 → 페이지 이미지로 Vision API 재시도
+      if (ws.length === 0) {
+        setLoading(true, `PDF 이미지 변환 중...`, `${i+1} / ${pdfs.length}`);
+        const images = await pdfToImages(pdfs[i]);
+        for (let p = 0; p < images.length; p++) {
+          setLoading(true, `PDF 페이지 분석 중...`, `페이지 ${p+1} / ${images.length}`);
+          const pw = await extractVision(images[p], 'image/png');
+          ws.push(...pw);
+        }
+      }
+
+      ws = dedupeWords(ws);
       S.words.push(...ws); added += ws.length;
     } catch (e) { toast('PDF 오류: ' + e.message, 'error'); }
   }
@@ -689,6 +713,24 @@ function parseGpt(data) {
   catch { return []; }
 }
 
+function splitChunks(text, size) {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += size) {
+    chunks.push(text.slice(i, i + size));
+  }
+  return chunks;
+}
+
+function dedupeWords(words) {
+  const seen = new Set();
+  return words.filter(w => {
+    const key = w.english.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // ── PARSERS ─────────────────────────────────────────────────────
 async function parsePdf(file) {
   if (!window.pdfjsLib) throw new Error('pdf.js 로드 실패');
@@ -699,6 +741,22 @@ async function parsePdf(file) {
     out += c.items.map(i => i.str).join(' ') + '\n';
   }
   return out;
+}
+
+async function pdfToImages(file) {
+  if (!window.pdfjsLib) throw new Error('pdf.js 로드 실패');
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const images = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page   = await pdf.getPage(p);
+    const vp     = page.getViewport({ scale: 2.0 });
+    const canvas = document.createElement('canvas');
+    canvas.width  = vp.width;
+    canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    images.push(canvas.toDataURL('image/png'));
+  }
+  return images;
 }
 
 // ── WORD TABLE ──────────────────────────────────────────────────
