@@ -338,17 +338,6 @@
     .toast.info    { background: #4299e1; color: #fff; }
     .toast.warn    { background: #ed8936; color: #fff; }
 
-    /* ─── HWP Notice ─────────────────────────────────── */
-    .notice-box {
-      padding: 14px 18px;
-      background: #fef3c7;
-      border: 1px solid #f6e05e;
-      border-radius: 10px;
-      font-size: 0.83rem;
-      color: #744210;
-      line-height: 1.7;
-    }
-    .notice-box strong { color: #92400e; }
   </style>
 </head>
 <body>
@@ -358,8 +347,8 @@
   <div class="header-brand">
     <div class="header-logo">📚</div>
     <div>
-      <div class="header-title">Ailly's English Vocabook</div>
-      <div class="header-sub">사진 · PDF · DOCX · HWP에서 영단어를 추출하여 단어장 / 시험장 생성</div>
+      <div class="header-title">Aelim Son's English Vocabook</div>
+      <div class="header-sub">사진 · PDF에서 영단어를 추출하여 단어장 / 시험장 생성</div>
     </div>
   </div>
   <div class="header-badge">v2.0</div>
@@ -408,8 +397,6 @@
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="image" onclick="switchTab('image')">📷 사진</button>
       <button class="tab-btn" data-tab="pdf"   onclick="switchTab('pdf')">📄 PDF</button>
-      <button class="tab-btn" data-tab="docx"  onclick="switchTab('docx')">📝 DOC/DOCX</button>
-      <button class="tab-btn" data-tab="hwp"   onclick="switchTab('hwp')">🇰🇷 HWP</button>
     </div>
 
     <!-- 사진 Tab -->
@@ -434,32 +421,6 @@
       <div class="file-list" id="list-pdf"></div>
     </div>
 
-    <!-- DOCX Tab -->
-    <div class="tab-panel" id="panel-docx">
-      <div class="drop-zone" id="dz-docx" onclick="document.getElementById('docxInput').click()">
-        <div class="dz-icon">📝</div>
-        <div class="dz-text">클릭하거나 Word 파일을 드래그하여 업로드</div>
-        <div class="dz-hint">.doc · .docx</div>
-        <input type="file" id="docxInput" accept=".doc,.docx" multiple onchange="handleFiles('docx', this.files)">
-      </div>
-      <div class="file-list" id="list-docx"></div>
-    </div>
-
-    <!-- HWP Tab -->
-    <div class="tab-panel" id="panel-hwp">
-      <div class="notice-box" style="margin-bottom:16px">
-        <strong>⚠️ HWP 지원 안내</strong><br>
-        • <strong>.hwpx</strong> (한글 2022+): 텍스트 자동 추출 지원<br>
-        • <strong>.hwp</strong> (구버전): 지원 제한 — HWP 문서를 <strong>화면 캡처</strong>하여 <strong>[사진]</strong> 탭에서 업로드해 주세요.
-      </div>
-      <div class="drop-zone" id="dz-hwp" onclick="document.getElementById('hwpInput').click()">
-        <div class="dz-icon">🇰🇷</div>
-        <div class="dz-text">클릭하거나 HWP 파일을 드래그하여 업로드</div>
-        <div class="dz-hint">.hwpx (권장) · .hwp (제한적)</div>
-        <input type="file" id="hwpInput" accept=".hwp,.hwpx" multiple onchange="handleFiles('hwp', this.files)">
-      </div>
-      <div class="file-list" id="list-hwp"></div>
-    </div>
 
     <button class="btn-extract" id="btnExtract" onclick="runExtract()" disabled>
       🔍 단어 추출하기
@@ -483,7 +444,7 @@
     <!-- Empty State -->
     <div class="empty-state" id="emptyState">
       <div class="icon">📖</div>
-      <p>사진·PDF·DOCX·HWP에서 단어를 추출해보세요</p>
+      <p>사진·PDF에서 단어를 추출해보세요</p>
     </div>
 
     <!-- Table -->
@@ -549,7 +510,6 @@ const Loader = {
 
 const CDN = {
   pdfjs:    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-  mammoth:  'https://cdn.jsdelivr.net/npm/mammoth@1.7.0/mammoth.browser.min.js',
 };
 const PDF_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -561,8 +521,6 @@ const S = {
   words:    [],         // [{english, korean}]
   images:   [],         // [{file, dataUrl}]  (sparse – null on remove)
   pdfs:     [],
-  docxArr:  [],
-  hwpArr:   [],
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -573,8 +531,6 @@ const S = {
   if (k) document.getElementById('apiKey').value = k;
   setupDrop('dz-image', 'image');
   setupDrop('dz-pdf',   'pdf');
-  setupDrop('dz-docx',  'docx');
-  setupDrop('dz-hwp',   'hwp');
 })();
 
 // ═══════════════════════════════════════════════════════════════
@@ -619,9 +575,6 @@ function switchTab(name) {
       if (window.pdfjsLib && !pdfjsLib.GlobalWorkerOptions.workerSrc)
         pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
     }).catch(() => {});
-  }
-  if (name === 'docx') {
-    Loader.load(CDN.mammoth).catch(() => {});
   }
 }
 
@@ -671,7 +624,7 @@ function removeImage(idx) {
 }
 
 function handleFiles(type, files) {
-  const arr      = { pdf: S.pdfs, docx: S.docxArr, hwp: S.hwpArr }[type];
+  const arr      = { pdf: S.pdfs }[type];
   const listId   = `list-${type}`;
   for (const f of files) {
     const idx = arr.length;
@@ -688,7 +641,7 @@ function handleFiles(type, files) {
 }
 
 function removeFile(type, idx, el) {
-  const arr = { pdf: S.pdfs, docx: S.docxArr, hwp: S.hwpArr }[type];
+  const arr = { pdf: S.pdfs }[type];
   arr[idx] = null;
   el.closest('.file-chip').remove();
   syncExtractBtn();
@@ -696,9 +649,7 @@ function removeFile(type, idx, el) {
 
 function syncExtractBtn() {
   const has = S.images.some(Boolean)
-           || S.pdfs.some(Boolean)
-           || S.docxArr.some(Boolean)
-           || S.hwpArr.some(Boolean);
+           || S.pdfs.some(Boolean);
   document.getElementById('btnExtract').disabled = !has;
 }
 
@@ -735,33 +686,9 @@ async function runExtract() {
     } catch (e) { toast('PDF 오류: ' + e.message, 'error'); }
   }
 
-  // ── DOCX ───────────────────────────────────────────────────
-  const docxFiles = S.docxArr.filter(Boolean);
-  for (let i = 0; i < docxFiles.length; i++) {
-    setLoading(true, `DOCX 분석 중...`, `${i+1} / ${docxFiles.length}`);
-    try {
-      await Loader.load(CDN.mammoth);
-      const text = await parseDocx(docxFiles[i]);
-      const ws   = await extractText(text, key);
-      S.words.push(...ws); added += ws.length;
-    } catch (e) { toast('DOCX 오류: ' + e.message, 'error'); }
-  }
-
-  // ── HWP ────────────────────────────────────────────────────
-  const hwpFiles = S.hwpArr.filter(Boolean);
-  for (let i = 0; i < hwpFiles.length; i++) {
-    setLoading(true, `HWP 분석 중...`, `${i+1} / ${hwpFiles.length}`);
-    try {
-      const text = await parseHwp(hwpFiles[i]);
-      const ws   = await extractText(text, key);
-      S.words.push(...ws); added += ws.length;
-    } catch (e) { toast('HWP 오류: ' + e.message, 'error'); }
-  }
-
   // ── Reset pending ──────────────────────────────────────────
-  S.images  = []; S.pdfs    = [];
-  S.docxArr = []; S.hwpArr  = [];
-  ['imgPreview','list-pdf','list-docx','list-hwp'].forEach(id => {
+  S.images = []; S.pdfs = [];
+  ['imgPreview','list-pdf'].forEach(id => {
     document.getElementById(id).innerHTML = '';
   });
 
@@ -852,40 +779,6 @@ async function parsePdf(file) {
   return out;
 }
 
-async function parseDocx(file) {
-  if (!window.mammoth) throw new Error('mammoth.js 로드 실패');
-  const buf = await file.arrayBuffer();
-  const res = await mammoth.extractRawText({ arrayBuffer: buf });
-  return res.value;
-}
-
-async function parseHwp(file) {
-  const name = file.name.toLowerCase();
-  if (name.endsWith('.hwpx')) {
-    // hwpx = ZIP 기반, XML 직접 파싱
-    try {
-      const buf = await file.arrayBuffer();
-      const zip = new PizZip(buf);
-      let text = '';
-      Object.keys(zip.files).forEach(fname => {
-        if (/section\d*\.xml$/i.test(fname)) {
-          const xml = zip.files[fname].asText();
-          (xml.match(/<hp:t[^>]*>([^<]*)<\/hp:t>/g) || []).forEach(m => {
-            const t = m.replace(/<[^>]+>/g, '').trim();
-            if (t) text += t + ' ';
-          });
-          text += '\n';
-        }
-      });
-      if (!text.trim()) throw new Error('텍스트 추출 결과가 없습니다');
-      return text;
-    } catch (e) {
-      throw new Error('HWPX 파싱 실패: ' + e.message);
-    }
-  } else {
-    throw new Error('.hwp 형식은 직접 지원이 어렵습니다.\n화면을 캡처하여 [사진] 탭에서 업로드해주세요.');
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════
 // WORD TABLE
