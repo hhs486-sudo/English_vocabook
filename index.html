@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ailly's English Vocabook</title>
+
+  <!-- Core (항상 필요) -->
+  <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
+  <script src="https://unpkg.com/docxtemplater@3.45.0/build/docxtemplater.js"></script>
+
+  <style>
+    /* ─── Reset & Base ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    /* ─── Header ────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #1a365d 0%, #2c5282 60%, #2b6cb0 100%);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .header-logo { font-size: 1.8rem; }
+    .header-title { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+    .header-sub  { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin-top: 1px; }
+    .header-badge {
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.9);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* ─── Layout ─────────────────────────────────────── */
+    .container { max-width: 1040px; margin: 0 auto; padding: 28px 20px 60px; }
+
+    /* ─── Card ───────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .card-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #a0aec0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    /* ─── Settings Row ───────────────────────────────── */
+    .settings-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 660px) { .settings-row { grid-template-columns: 1fr; } }
+
+    /* ─── Input Group ────────────────────────────────── */
+    .input-row { display: flex; gap: 8px; }
+    .input-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-family: monospace;
+      transition: border-color 0.2s;
+      background: #fafafa;
+    }
+    .input-row input:focus { outline: none; border-color: #4299e1; background: #fff; }
+
+    /* ─── Template Zone ──────────────────────────────── */
+    .tmpl-zone {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1.5px dashed #cbd5e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+    .tmpl-zone:hover { border-color: #4299e1; background: #ebf8ff; }
+    .tmpl-zone.loaded  { border-color: #48bb78; border-style: solid; background: #f0fff4; }
+    .tmpl-zone-icon { font-size: 1.6rem; }
+    .tmpl-zone-text { font-size: 0.85rem; color: #718096; }
+    .tmpl-zone.loaded .tmpl-zone-text { color: #276749; font-weight: 600; }
+
+    /* ─── Placeholder Guide ──────────────────────────── */
+    .guide-box {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #fffbeb;
+      border: 1px solid #f6e05e;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: #744210;
+      line-height: 1.7;
+    }
+    .guide-box code {
+      background: #fef3c7;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    /* ─── Tab Widget ─────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      border: none;
+      background: transparent;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #718096;
+      cursor: pointer;
+      border-radius: 10px 10px 0 0;
+      margin-bottom: -2px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: #2b6cb0; background: #ebf8ff; }
+    .tab-btn.active { color: #2b6cb0; border-bottom-color: #4299e1; background: #ebf8ff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ─── Drop Zone ──────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed #cbd5e0;
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
+      user-select: none;
+    }
+    .drop-zone:hover, .drop-zone.over { border-color: #4299e1; background: #ebf8ff; }
+    .drop-zone input[type="file"] { display: none; }
+    .dz-icon { font-size: 2.4rem; margin-bottom: 10px; }
+    .dz-text { color: #718096; font-size: 0.9rem; margin-bottom: 4px; }
+    .dz-hint { color: #a0aec0; font-size: 0.78rem; }
+
+    /* ─── Preview / File List ────────────────────────── */
+    .preview-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .preview-item { position: relative; width: 80px; height: 80px; }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0; }
+    .rm-btn {
+      position: absolute; top: -6px; right: -6px;
+      width: 20px; height: 20px;
+      background: #fc8181; color: #fff;
+      border: 2px solid #fff; border-radius: 50%;
+      font-size: 11px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .file-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      background: #ebf8ff; border: 1px solid #bee3f8;
+      border-radius: 20px; font-size: 0.82rem; color: #2b6cb0;
+    }
+    .file-chip .rm { cursor: pointer; color: #fc8181; font-weight: 800; font-size: 1rem; line-height: 1; }
+
+    /* ─── Buttons ────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px;
+      border: none; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-blue   { background: #4299e1; color: #fff; }
+    .btn-blue:hover:not(:disabled)   { background: #3182ce; }
+    .btn-green  { background: #48bb78; color: #fff; }
+    .btn-green:hover:not(:disabled)  { background: #38a169; }
+    .btn-dark   { background: #2d3748; color: #fff; }
+    .btn-dark:hover:not(:disabled)   { background: #1a202c; }
+    .btn-indigo { background: #667eea; color: #fff; }
+    .btn-indigo:hover:not(:disabled) { background: #5a67d8; }
+    .btn-ghost  { background: #fff; color: #4a5568; border: 1.5px solid #e2e8f0; }
+    .btn-ghost:hover:not(:disabled)  { background: #f7fafc; }
+    .btn-danger { background: #fff5f5; color: #e53e3e; border: 1.5px solid #fed7d7; }
+    .btn-danger:hover:not(:disabled) { background: #e53e3e; color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+    .btn-extract {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 800;
+      cursor: pointer; transition: opacity 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .btn-extract:hover:not(:disabled) { opacity: 0.88; }
+    .btn-extract:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ─── Loading Bar ────────────────────────────────── */
+    .loading-bar {
+      display: none;
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    }
+    .loading-bar.show { display: block; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-msg { color: #667eea; font-weight: 700; font-size: 0.95rem; }
+    .loading-sub { color: #a0aec0; font-size: 0.8rem; margin-top: 4px; }
+
+    /* ─── Word Table Section ─────────────────────────── */
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 1rem; font-weight: 700; color: #2d3748; }
+    .count-badge {
+      padding: 4px 14px;
+      background: #ebf8ff;
+      color: #2b6cb0;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .word-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .word-table th {
+      background: #f7fafc;
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .word-table td { padding: 6px 8px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+    .word-table tr:hover td { background: #fafafa; }
+    .word-table td.num { color: #cbd5e0; font-size: 0.8rem; text-align: center; width: 40px; }
+    .word-table td input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1.5px solid transparent;
+      border-radius: 7px;
+      font-size: 0.88rem;
+      background: transparent;
+      transition: all 0.15s;
+    }
+    .word-table td input:focus { outline: none; border-color: #4299e1; background: #fff; }
+
+    /* ─── Empty State ────────────────────────────────── */
+    .empty-state { text-align: center; padding: 52px 20px; color: #a0aec0; }
+    .empty-state .icon { font-size: 3.2rem; margin-bottom: 14px; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ─── Action Bar ─────────────────────────────────── */
+    .action-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto auto;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f4f8;
+    }
+    @media (max-width: 600px) {
+      .action-bar { grid-template-columns: 1fr 1fr; }
+      .action-bar .btn-danger, .action-bar .btn-ghost { grid-column: span 1; }
+    }
+
+    /* ─── Toast ──────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 0.88rem; font-weight: 700;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+      transform: translateY(90px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 9999;
+      max-width: 340px;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #48bb78; color: #fff; }
+    .toast.error   { background: #fc8181; color: #fff; }
+    .toast.info    { background: #4299e1; color: #fff; }
+    .toast.warn    { background: #ed8936; color: #fff; }
+
+    /* ─── HWP Notice ─────────────────────────────────── */
+    .notice-box {
+      padding: 14px 18px;
+      background: #fef3c7;
+      border: 1px solid #f6e05e;
+      border-radius: 10px;
+      font-size: 0.83rem;
+      color: #744210;
+      line-height: 1.7;
+    }
+    .notice-box strong { color: #92400e; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="header-logo">📚</div>
+    <div>
+      <div class="header-title">Ailly's English Vocabook</div>
+      <div class="header-sub">사진 · PDF · DOCX · HWP에서 영단어를 추출하여 단어장 / 시험장 생성</div>
+    </div>
+  </div>
+  <div class="header-badge">v2.0</div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ MAIN -->
+<div class="container">
+
+  <!-- ── Settings Row ──────────────────────────────────── -->
+  <div class="settings-row">
+
+    <!-- API Key -->
+    <div class="card">
+      <div class="card-label">🔑 OpenAI API Key</div>
+      <div class="input-row">
+        <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+        <button class="btn btn-blue" onclick="saveApiKey()">저장</button>
+      </div>
+    </div>
+
+    <!-- Template Upload -->
+    <div class="card">
+      <div class="card-label">📄 단어장 템플릿 (.docx)</div>
+      <div class="tmpl-zone" id="tmplZone" onclick="document.getElementById('tmplInput').click()">
+        <div class="tmpl-zone-icon">📋</div>
+        <div>
+          <div class="tmpl-zone-text" id="tmplLabel">영어단어장.docx 업로드</div>
+          <div style="font-size:0.75rem;color:#a0aec0;margin-top:2px">클릭하여 파일 선택</div>
+        </div>
+        <input type="file" id="tmplInput" accept=".docx" onchange="loadTemplate(this)">
+      </div>
+      <div class="guide-box">
+        데이터 행에 배치할 플레이스홀더:<br>
+        <code>{#pairs}</code> (반복 시작) →
+        <code>{left_english}</code> <code>{left_korean}</code>
+        <code>{right_english}</code> <code>{right_korean}</code> →
+        <code>{/pairs}</code> (반복 끝)
+      </div>
+    </div>
+
+  </div><!-- /settings-row -->
+
+  <!-- ── Input Card (Tab Widget) ───────────────────────── -->
+  <div class="card">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="image" onclick="switchTab('image')">📷 사진</button>
+      <button class="tab-btn" data-tab="pdf"   onclick="switchTab('pdf')">📄 PDF</button>
+      <button class="tab-btn" data-tab="docx"  onclick="switchTab('docx')">📝 DOC/DOCX</button>
+      <button class="tab-btn" data-tab="hwp"   onclick="switchTab('hwp')">🇰🇷 HWP</button>
+    </div>
+
+    <!-- 사진 Tab -->
+    <div class="tab-panel active" id="panel-image">
+      <div class="drop-zone" id="dz-image" onclick="document.getElementById('imgInput').click()">
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-text">클릭하거나 사진을 드래그하여 업로드</div>
+        <div class="dz-hint">JPG · PNG · WEBP · 여러 장 동시 업로드 가능</div>
+        <input type="file" id="imgInput" accept="image/*" multiple onchange="handleImages(this.files)">
+      </div>
+      <div class="preview-strip" id="imgPreview"></div>
+    </div>
+
+    <!-- PDF Tab -->
+    <div class="tab-panel" id="panel-pdf">
+      <div class="drop-zone" id="dz-pdf" onclick="document.getElementById('pdfInput').click()">
+        <div class="dz-icon">📄</div>
+        <div class="dz-text">클릭하거나 PDF 파일을 드래그하여 업로드</div>
+        <div class="dz-hint">.pdf · 여러 파일 가능</div>
+        <input type="file" id="pdfInput" accept=".pdf" multiple onchange="handleFiles('pdf', this.files)">
+      </div>
+      <div class="file-list" id="list-pdf"></div>
+    </div>
+
+    <!-- DOCX Tab -->
+    <div class="tab-panel" id="panel-docx">
+      <div class="drop-zone" id="dz-docx" onclick="document.getElementById('docxInput').click()">
+        <div class="dz-icon">📝</div>
+        <div class="dz-text">클릭하거나 Word 파일을 드래그하여 업로드</div>
+        <div class="dz-hint">.doc · .docx</div>
+        <input type="file" id="docxInput" accept=".doc,.docx" multiple onchange="handleFiles('docx', this.files)">
+      </div>
+      <div class="file-list" id="list-docx"></div>
+    </div>
+
+    <!-- HWP Tab -->
+    <div class="tab-panel" id="panel-hwp">
+      <div class="notice-box" style="margin-bottom:16px">
+        <strong>⚠️ HWP 지원 안내</strong><br>
+        • <strong>.hwpx</strong> (한글 2022+): 텍스트 자동 추출 지원<br>
+        • <strong>.hwp</strong> (구버전): 지원 제한 — HWP 문서를 <strong>화면 캡처</strong>하여 <strong>[사진]</strong> 탭에서 업로드해 주세요.
+      </div>
+      <div class="drop-zone" id="dz-hwp" onclick="document.getElementById('hwpInput').click()">
+        <div class="dz-icon">🇰🇷</div>
+        <div class="dz-text">클릭하거나 HWP 파일을 드래그하여 업로드</div>
+        <div class="dz-hint">.hwpx (권장) · .hwp (제한적)</div>
+        <input type="file" id="hwpInput" accept=".hwp,.hwpx" multiple onchange="handleFiles('hwp', this.files)">
+      </div>
+      <div class="file-list" id="list-hwp"></div>
+    </div>
+
+    <button class="btn-extract" id="btnExtract" onclick="runExtract()" disabled>
+      🔍 단어 추출하기
+    </button>
+  </div><!-- /input card -->
+
+  <!-- ── Loading ────────────────────────────────────────── -->
+  <div class="loading-bar" id="loadingBar">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loadingMsg">분석 중...</div>
+    <div class="loading-sub" id="loadingSub"></div>
+  </div>
+
+  <!-- ── Word Table ─────────────────────────────────────── -->
+  <div class="card">
+    <div class="section-head">
+      <div class="section-title">📝 단어 목록</div>
+      <span class="count-badge" id="wordCount">0 단어</span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState">
+      <div class="icon">📖</div>
+      <p>사진·PDF·DOCX·HWP에서 단어를 추출해보세요</p>
+    </div>
+
+    <!-- Table -->
+    <div id="tableWrap" style="display:none; overflow-x:auto">
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>영어 단어 / 표현</th>
+            <th>한글 뜻</th>
+            <th style="width:60px">삭제</th>
+          </tr>
+        </thead>
+        <tbody id="wordBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Table Actions -->
+    <div id="tableActions" style="display:none">
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="addRow()">
+        + 단어 직접 추가
+      </button>
+    </div>
+
+    <!-- Output Buttons -->
+    <div class="action-bar" id="actionBar" style="display:none">
+      <button class="btn btn-dark" style="justify-content:center" onclick="generate('vocab')">
+        📖 단어장 생성
+      </button>
+      <button class="btn btn-indigo" style="justify-content:center" onclick="generate('test')">
+        ✏️ 시험장 생성
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="addRow()">+ 추가</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑️ 전체삭제</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════ SCRIPT -->
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════
+// LAZY LIBRARY LOADER
+// ═══════════════════════════════════════════════════════════════
+const Loader = {
+  _cache: {},
+  load(url) {
+    if (this._cache[url]) return this._cache[url];
+    this._cache[url] = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload  = res;
+      s.onerror = () => rej(new Error('라이브러리 로드 실패: ' + url));
+      document.head.appendChild(s);
+    });
+    return this._cache[url];
+  }
+};
+
+const CDN = {
+  pdfjs:    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  mammoth:  'https://cdn.jsdelivr.net/npm/mammoth@1.7.0/mammoth.browser.min.js',
+};
+const PDF_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const S = {
+  template: null,       // ArrayBuffer
+  words:    [],         // [{english, korean}]
+  images:   [],         // [{file, dataUrl}]  (sparse – null on remove)
+  pdfs:     [],
+  docxArr:  [],
+  hwpArr:   [],
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+(function init() {
+  const k = localStorage.getItem('openai_api_key');
+  if (k) document.getElementById('apiKey').value = k;
+  setupDrop('dz-image', 'image');
+  setupDrop('dz-pdf',   'pdf');
+  setupDrop('dz-docx',  'docx');
+  setupDrop('dz-hwp',   'hwp');
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// API KEY
+// ═══════════════════════════════════════════════════════════════
+function saveApiKey() {
+  const k = document.getElementById('apiKey').value.trim();
+  if (!k.startsWith('sk-')) { toast('올바른 API 키를 입력해주세요 (sk-...)', 'error'); return; }
+  localStorage.setItem('openai_api_key', k);
+  toast('API 키가 저장되었습니다', 'success');
+}
+function getKey() { return document.getElementById('apiKey').value.trim(); }
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE
+// ═══════════════════════════════════════════════════════════════
+function loadTemplate(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    S.template = e.target.result;
+    document.getElementById('tmplZone').classList.add('loaded');
+    document.getElementById('tmplLabel').textContent = '✅ ' + file.name;
+    toast('템플릿 로드 완료', 'success');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p =>
+    p.classList.toggle('active', p.id === 'panel-' + name));
+
+  // Lazy load heavy libs on first tab visit
+  if (name === 'pdf') {
+    Loader.load(CDN.pdfjs).then(() => {
+      if (window.pdfjsLib && !pdfjsLib.GlobalWorkerOptions.workerSrc)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+    }).catch(() => {});
+  }
+  if (name === 'docx') {
+    Loader.load(CDN.mammoth).catch(() => {});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════════════════════════
+function setupDrop(zoneId, type) {
+  const el = document.getElementById(zoneId);
+  el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('over'); });
+  el.addEventListener('dragleave', () => el.classList.remove('over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('over');
+    if (type === 'image') handleImages(e.dataTransfer.files);
+    else handleFiles(type, e.dataTransfer.files);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FILE HANDLERS
+// ═══════════════════════════════════════════════════════════════
+function handleImages(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const idx = S.images.length;
+      S.images.push({ file: f, dataUrl: e.target.result });
+      const strip = document.getElementById('imgPreview');
+      const div   = document.createElement('div');
+      div.className   = 'preview-item';
+      div.dataset.idx = idx;
+      div.innerHTML   = `
+        <img src="${e.target.result}" alt="">
+        <button class="rm-btn" onclick="removeImage(${idx})">×</button>`;
+      strip.appendChild(div);
+      syncExtractBtn();
+    };
+    reader.readAsDataURL(f);
+  }
+}
+
+function removeImage(idx) {
+  S.images[idx] = null;
+  document.querySelector(`.preview-item[data-idx="${idx}"]`)?.remove();
+  syncExtractBtn();
+}
+
+function handleFiles(type, files) {
+  const arr      = { pdf: S.pdfs, docx: S.docxArr, hwp: S.hwpArr }[type];
+  const listId   = `list-${type}`;
+  for (const f of files) {
+    const idx = arr.length;
+    arr.push(f);
+    const chip = document.createElement('span');
+    chip.className   = 'file-chip';
+    chip.dataset.idx = idx;
+    chip.dataset.type= type;
+    chip.innerHTML   = `<span>📄 ${esc(f.name)}</span>
+      <span class="rm" onclick="removeFile('${type}',${idx},this)">×</span>`;
+    document.getElementById(listId).appendChild(chip);
+  }
+  syncExtractBtn();
+}
+
+function removeFile(type, idx, el) {
+  const arr = { pdf: S.pdfs, docx: S.docxArr, hwp: S.hwpArr }[type];
+  arr[idx] = null;
+  el.closest('.file-chip').remove();
+  syncExtractBtn();
+}
+
+function syncExtractBtn() {
+  const has = S.images.some(Boolean)
+           || S.pdfs.some(Boolean)
+           || S.docxArr.some(Boolean)
+           || S.hwpArr.some(Boolean);
+  document.getElementById('btnExtract').disabled = !has;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN EXTRACT
+// ═══════════════════════════════════════════════════════════════
+async function runExtract() {
+  const key = getKey();
+  if (!key.startsWith('sk-')) { toast('OpenAI API 키를 입력해주세요', 'error'); return; }
+
+  setLoading(true, 'AI가 단어를 분석하는 중...');
+  let added = 0;
+
+  // ── Images ─────────────────────────────────────────────────
+  const imgs = S.images.filter(Boolean);
+  for (let i = 0; i < imgs.length; i++) {
+    setLoading(true, `사진 분석 중...`, `${i+1} / ${imgs.length}`);
+    try {
+      const ws = await extractVision(imgs[i].dataUrl, imgs[i].file.type, key);
+      S.words.push(...ws); added += ws.length;
+    } catch (e) { toast('사진 오류: ' + e.message, 'error'); }
+  }
+
+  // ── PDFs ───────────────────────────────────────────────────
+  const pdfs = S.pdfs.filter(Boolean);
+  for (let i = 0; i < pdfs.length; i++) {
+    setLoading(true, `PDF 분석 중...`, `${i+1} / ${pdfs.length}`);
+    try {
+      await Loader.load(CDN.pdfjs);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+      const text = await parsePdf(pdfs[i]);
+      const ws   = await extractText(text, key);
+      S.words.push(...ws); added += ws.length;
+    } catch (e) { toast('PDF 오류: ' + e.message, 'error'); }
+  }
+
+  // ── DOCX ───────────────────────────────────────────────────
+  const docxFiles = S.docxArr.filter(Boolean);
+  for (let i = 0; i < docxFiles.length; i++) {
+    setLoading(true, `DOCX 분석 중...`, `${i+1} / ${docxFiles.length}`);
+    try {
+      await Loader.load(CDN.mammoth);
+      const text = await parseDocx(docxFiles[i]);
+      const ws   = await extractText(text, key);
+      S.words.push(...ws); added += ws.length;
+    } catch (e) { toast('DOCX 오류: ' + e.message, 'error'); }
+  }
+
+  // ── HWP ────────────────────────────────────────────────────
+  const hwpFiles = S.hwpArr.filter(Boolean);
+  for (let i = 0; i < hwpFiles.length; i++) {
+    setLoading(true, `HWP 분석 중...`, `${i+1} / ${hwpFiles.length}`);
+    try {
+      const text = await parseHwp(hwpFiles[i]);
+      const ws   = await extractText(text, key);
+      S.words.push(...ws); added += ws.length;
+    } catch (e) { toast('HWP 오류: ' + e.message, 'error'); }
+  }
+
+  // ── Reset pending ──────────────────────────────────────────
+  S.images  = []; S.pdfs    = [];
+  S.docxArr = []; S.hwpArr  = [];
+  ['imgPreview','list-pdf','list-docx','list-hwp'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+
+  setLoading(false);
+  renderTable();
+  if (added > 0) toast(`${added}개 단어가 추가되었습니다 🎉`, 'success');
+  else           toast('추출된 단어가 없습니다', 'warn');
+  syncExtractBtn();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXTRACTION ENGINE
+// ═══════════════════════════════════════════════════════════════
+const GPT_PROMPT_VISION = `이 이미지에서 영어 단어/표현과 한글 뜻 쌍을 모두 찾아 JSON 배열로만 반환해줘.
+형식: [{"english":"단어","korean":"한글 뜻"}]
+- 품사 표기(명, 동, 형, 부 등)가 있으면 한글 뜻에 포함 (예: "명) 기억력")
+- 영어와 한글이 함께 있는 항목만 추출, 중복 제거
+- JSON 배열만 반환 (설명 없이), 없으면 []`;
+
+const GPT_PROMPT_TEXT = (text) =>
+`다음 텍스트에서 영어 단어/표현과 한글 뜻 쌍을 모두 찾아 JSON 배열로만 반환해줘.
+형식: [{"english":"단어","korean":"한글 뜻"}]
+- 품사 표기가 있으면 한글 뜻에 포함, 중복 제거
+- JSON 배열만 반환, 없으면 []
+텍스트:
+${text.slice(0, 9000)}`;
+
+async function extractVision(dataUrl, mimeType, key) {
+  const base64 = dataUrl.split(',')[1];
+  const mime   = mimeType || 'image/jpeg';
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: GPT_PROMPT_VISION },
+          { type: 'image_url',
+            image_url: { url: `data:${mime};base64,${base64}`, detail: 'high' } }
+        ]
+      }],
+      max_tokens: 4096
+    })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+  return parseGptResponse(await res.json());
+}
+
+async function extractText(text, key) {
+  if (!text.trim()) return [];
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: GPT_PROMPT_TEXT(text) }],
+      max_tokens: 4096
+    })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+  return parseGptResponse(await res.json());
+}
+
+function parseGptResponse(data) {
+  const raw = data.choices?.[0]?.message?.content?.trim() || '';
+  const m = raw.match(/\[[\s\S]*\]/);
+  if (!m) return [];
+  try {
+    return JSON.parse(m[0]).filter(w => w.english && w.korean);
+  } catch { return []; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARSERS
+// ═══════════════════════════════════════════════════════════════
+async function parsePdf(file) {
+  if (!window.pdfjsLib) throw new Error('pdf.js 로드 실패');
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let out = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page    = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    out += content.items.map(i => i.str).join(' ') + '\n';
+  }
+  return out;
+}
+
+async function parseDocx(file) {
+  if (!window.mammoth) throw new Error('mammoth.js 로드 실패');
+  const buf = await file.arrayBuffer();
+  const res = await mammoth.extractRawText({ arrayBuffer: buf });
+  return res.value;
+}
+
+async function parseHwp(file) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.hwpx')) {
+    // hwpx = ZIP 기반, XML 직접 파싱
+    try {
+      const buf = await file.arrayBuffer();
+      const zip = new PizZip(buf);
+      let text = '';
+      Object.keys(zip.files).forEach(fname => {
+        if (/section\d*\.xml$/i.test(fname)) {
+          const xml = zip.files[fname].asText();
+          (xml.match(/<hp:t[^>]*>([^<]*)<\/hp:t>/g) || []).forEach(m => {
+            const t = m.replace(/<[^>]+>/g, '').trim();
+            if (t) text += t + ' ';
+          });
+          text += '\n';
+        }
+      });
+      if (!text.trim()) throw new Error('텍스트 추출 결과가 없습니다');
+      return text;
+    } catch (e) {
+      throw new Error('HWPX 파싱 실패: ' + e.message);
+    }
+  } else {
+    throw new Error('.hwp 형식은 직접 지원이 어렵습니다.\n화면을 캡처하여 [사진] 탭에서 업로드해주세요.');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WORD TABLE
+// ═══════════════════════════════════════════════════════════════
+function renderTable() {
+  const body = document.getElementById('wordBody');
+  body.innerHTML = '';
+  S.words.forEach((w, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="num">${i + 1}</td>
+      <td><input type="text" value="${esc(w.english)}"
+          onchange="S.words[${i}].english=this.value" placeholder="영어 단어"></td>
+      <td><input type="text" value="${esc(w.korean)}"
+          onchange="S.words[${i}].korean=this.value" placeholder="한글 뜻"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteRow(${i})">삭제</button></td>`;
+    body.appendChild(tr);
+  });
+  const has = S.words.length > 0;
+  document.getElementById('emptyState').style.display    = has ? 'none'  : 'block';
+  document.getElementById('tableWrap').style.display     = has ? 'block' : 'none';
+  document.getElementById('tableActions').style.display  = has ? 'block' : 'none';
+  document.getElementById('actionBar').style.display     = has ? 'grid'  : 'none';
+  document.getElementById('wordCount').textContent = `${S.words.length} 단어`;
+  syncExtractBtn();
+}
+
+function deleteRow(idx) { S.words.splice(idx, 1); renderTable(); }
+
+function addRow() {
+  S.words.push({ english: '', korean: '' });
+  renderTable();
+  const rows = document.querySelectorAll('#wordBody tr');
+  rows[rows.length - 1]?.querySelector('input')?.focus();
+}
+
+function clearAll() {
+  if (!confirm('단어 목록을 모두 삭제할까요?')) return;
+  S.words = []; renderTable();
+  toast('목록이 초기화되었습니다', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENT GENERATION
+// ═══════════════════════════════════════════════════════════════
+async function generate(mode) {
+  if (!S.template) { toast('먼저 템플릿 파일을 업로드해주세요', 'error'); return; }
+  const valid = S.words.filter(w => w.english || w.korean);
+  if (!valid.length) { toast('단어 목록이 비어있습니다', 'error'); return; }
+
+  setLoading(true, mode === 'vocab' ? '단어장 생성 중...' : '시험장 생성 중...');
+  try {
+    const pairs = buildPairs(valid, mode);
+    const blob  = await fillTemplate(S.template, { pairs });
+    const label = mode === 'vocab' ? '영어단어장' : '영어단어시험장';
+    downloadBlob(blob, `${label}_${today()}.docx`);
+    toast(`${label} 다운로드 완료 ✅`, 'success');
+  } catch (e) {
+    console.error(e);
+    toast('생성 실패: ' + e.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function buildPairs(words, mode) {
+  const pairs = [];
+  for (let i = 0; i < words.length; i += 2) {
+    const L = words[i]     || { english: '', korean: '' };
+    const R = words[i + 1] || { english: '', korean: '' };
+    if (mode === 'vocab') {
+      pairs.push({
+        left_english:  L.english,
+        left_korean:   L.korean,
+        right_english: R.english,
+        right_korean:  R.korean,
+      });
+    } else { // 시험장
+      pairs.push({
+        left_english:  '',           // 영어 제거 → 빈칸 (한글 보고 쓰기)
+        left_korean:   L.korean,     // 한글 유지
+        right_english: R.english,    // 영어 유지 (영어 보고 한글 쓰기)
+        right_korean:  '',           // 한글 제거 → 빈칸
+      });
+    }
+  }
+  return pairs;
+}
+
+async function fillTemplate(buffer, data) {
+  // Clone buffer (PizZip consumes it)
+  const clone = buffer.slice(0);
+  const zip   = new PizZip(clone);
+  const doc   = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks:    true,
+    nullGetter:    () => '',   // undefined 변수 → 빈 문자열
+  });
+  doc.setData(data);
+  doc.render();
+
+  // Post-process: adjust font sizes for long text
+  const outZip = doc.getZip();
+  const xmlKey = 'word/document.xml';
+  if (outZip.files[xmlKey]) {
+    outZip.file(xmlKey, adjustFontSizes(outZip.files[xmlKey].asText()));
+  }
+
+  return outZip.generate({
+    type:     'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FONT SIZE AUTO-ADJUSTMENT
+// 셀 텍스트 길이에 따라 폰트 크기를 자동으로 줄여 한 줄 유지
+// ═══════════════════════════════════════════════════════════════
+function adjustFontSizes(xml) {
+  try {
+    // 각 <w:tc> 셀 블록을 순회
+    return xml.replace(/<w:tc[ >][\s\S]*?<\/w:tc>/g, cellXml => {
+      // 셀 전체 텍스트 추출
+      const totalText = (cellXml.match(/<w:t[^>]*>[\s\S]*?<\/w:t>/g) || [])
+        .map(t => t.replace(/<[^>]*>/g, ''))
+        .join('');
+
+      if (totalText.length <= 13) return cellXml; // 짧으면 그대로
+
+      // 길이 → 폰트 크기 (half-points: 20 = 10pt)
+      const len  = totalText.length;
+      const size = len <= 19 ? 18   // 9pt
+                 : len <= 26 ? 16   // 8pt
+                 : len <= 34 ? 14   // 7pt
+                 :             12;  // 6pt
+
+      return cellXml
+        // 기존 sz 제거
+        .replace(/<w:sz w:val="[^"]*"\/>/g, '')
+        .replace(/<w:szCs w:val="[^"]*"\/>/g, '')
+        // <w:rPr> 뒤에 새 크기 삽입
+        .replace(/<w:rPr>/g,
+          `<w:rPr><w:sz w:val="${size}"/><w:szCs w:val="${size}"/>`);
+    });
+  } catch (e) {
+    console.warn('Font size adjustment skipped:', e);
+    return xml;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════
+function setLoading(show, msg = '', sub = '') {
+  const bar = document.getElementById('loadingBar');
+  bar.classList.toggle('show', show);
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loadingSub').textContent = sub;
+  document.getElementById('btnExtract').disabled = show;
+}
+
+let toastTimer;
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3600);
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function today() { return new Date().toISOString().slice(0, 10); }
+
+function esc(str) {
+  return (str || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>

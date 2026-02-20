@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ailly-english-vocabook
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false          # Render 대시보드에서 직접 입력
+      - key: NODE_ENV
+        value: production

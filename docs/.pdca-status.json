@@ -1,0 +1,41 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-02-20T04:31:26.098Z",
+  "activeFeatures": [
+    "Ailly_english_work"
+  ],
+  "primaryFeature": "Ailly_english_work",
+  "features": {
+    "Ailly_english_work": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-02-20T04:31:26.098Z",
+        "lastUpdated": "2026-02-20T04:31:26.098Z"
+      },
+      "lastFile": "E:\\Python\\Ailly_english_work\\server.js"
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-02-20T03:56:36.446Z",
+    "onboardingCompleted": false,
+    "lastActivity": "2026-02-20T04:31:26.098Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-02-20T04:31:26.098Z",
+      "feature": "Ailly_english_work",
+      "phase": "do",
+      "action": "updated"
+    }
+  ]
+}
